@@ -2,10 +2,14 @@
 
 ## Deployment instructions for day-to-day work
 
+### Accessing the application
+
+The application is accessible at `https://hostname.cryptosec.se` over HTTPS.
+
 ### Deploying a new version of the application, or initial deployment
 
 1. Make the required changes to the application.
-2. Update the chart version and/or the application version in `deploy/helm/node-hostname/Chart.yaml`. This will ensure that Helm redeploy the application later on.
+2. Update the chart version and/or the application version in `deploy/helm/node-hostname/Chart.yaml`. For example update `version: 0.2.0` to `version: 0.3.0`. This will ensure that Helm redeploy the application later on.
 3. Commit and push the changes to the Git repository, this will automatically trigger a rebuild of the application, using the Dockerfile in the repository root.
 4. After a successful build, (re)deploy the application using Helm: `cd deploy/helm/node-hostname && helm upgrade --install hostname .`.
 5. Done!
@@ -15,6 +19,17 @@ If you, for some reason, do not wish to use Helm, feel free to use the Kubernete
 TODOs:
 * Instead of pushing on every build to the `latest` tag, I would probably design a solution where production builds are done when tags are pushed, for example semver tags. That way we can then use a more sane versioning for production deployment, and use the `latest` tag only for something like a staging environment. I have done something similar before in `https://github.com/zozs/a-wild-button-appears/blob/master/.github/workflows/nodejs.yml`.
 * Instead of manually deployment the application with a `kubectl rollout` or `helm`, I would deploy ArgoCD or something similar to manage the deployment. Maybe combined with argocd-image-updater to look for newly tagged images?
+* It could be neat to define a dedicated namespace for the application, if the customer ever wants to deploy more things to the cluster.
+
+#### TODO: ArgoCD work-in-progress (not finished)
+
+TODO: I've started a small ArgoCD work in `deploy/argocd`. The `app.yaml` includes an ArgoCD application, which would allow the deployment to work like this instead:
+
+1. Commit changes to the application on Github.
+2. ArgoCD (using argocd-image-update) would automatically pick up the new image, update the `values.yaml` file with the new image tag, and then trigger a redeploy by itself.
+3. The same thing would work for any updates to the Helm chart itself.
+
+I've got this working on my local Kubernetes cluster at home, using the `app.yaml` above. However, I did not have time to actually install and configure ArgoCD and the image updater at the newly created Hetzner cluster, since there's quite a lot of extra work involved getting it up and running.
 
 ## Deployment documentation
 
@@ -53,3 +68,4 @@ spec:
         exposedPort: 443
 ```
 
+TODO: the `/data/acme.json` is actually not stored on a persistent volume, so every restart of Traefik will trigger a new certificate request. Not great, and will quite easy reach the rate limit of lets encrypt.

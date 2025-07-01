@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: node-hostname
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/write-back-target: helmvalues:/apps/node-hostname/values.yaml
+    argocd-image-updater.argoproj.io/image-list: hostname=ghcr.io/zozs/node-hostname:latest
+    argocd-image-updater.argoproj.io/hostname.update-strategy: digest
+    argocd-image-updater.argoproj.io/hostname.helm.image-name: image.repository
+    argocd-image-updater.argoproj.io/hostname.helm.image-tag: image.tag
+spec:
+  project: default
+  destination:
+    namespace: default
+    server: https://kubernetes.default.svc
+  source:
+    path: apps/node-hostname
+    repoURL: ssh://git@code.zozs.se:2225/linus/k8s.git
+    targetRevision: main
+  syncPolicy:
+    automated:
+      prune: true
+
