@@ -1,0 +1,23 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "node-hostname.fullname" . }}
+  labels:
+    {{- include "node-hostname.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  entryPoints:
+  - websecure
+  tls:
+    certResolver: default
+  routes:
+  - kind: Rule
+    match: Host(`{{ .Values.ingress.host }}`)
+    services:
+    - name: {{ include "node-hostname.fullname" $ }}
+      port: http
+{{- end }}
