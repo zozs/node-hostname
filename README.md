@@ -2,15 +2,19 @@
 
 ## Deployment instructions for day-to-day work
 
-### Deploying a new version of the application
+### Deploying a new version of the application, or initial deployment
 
-1. Push the desired changes to the Git repository, this will automatically trigger a rebuild of the application, using the Dockerfile in the repository root.
-2. After a succesful build, redeploy the application using kubectl, with `kubectl rollout restart deploy/node-hostname`. This will pull the latest image and do a rolling restart.
-3. Done!
+1. Make the required changes to the application.
+2. Update the chart version and/or the application version in `deploy/helm/node-hostname/Chart.yaml`. This will ensure that Helm redeploy the application later on.
+3. Commit and push the changes to the Git repository, this will automatically trigger a rebuild of the application, using the Dockerfile in the repository root.
+4. After a successful build, (re)deploy the application using Helm: `cd deploy/helm/node-hostname && helm upgrade --install hostname .`.
+5. Done!
+
+If you, for some reason, do not wish to use Helm, feel free to use the Kubernetes manifest in `deploy/kubernetes/` and apply it with `kubectl apply -f www.yaml`. You then need to trigger a manual rollout upon a build of new docker images with `kubectl rollout restart deploy/node-hostname`.
 
 TODOs:
 * Instead of pushing on every build to the `latest` tag, I would probably design a solution where production builds are done when tags are pushed, for example semver tags. That way we can then use a more sane versioning for production deployment, and use the `latest` tag only for something like a staging environment. I have done something similar before in `https://github.com/zozs/a-wild-button-appears/blob/master/.github/workflows/nodejs.yml`.
-* Instead of manually deployment the application with a `kubectl rollout`, I would deploy ArgoCD or something similar to manage the deployment. Maybe combined with argocd-image-updater to look for newly tagged images?
+* Instead of manually deployment the application with a `kubectl rollout` or `helm`, I would deploy ArgoCD or something similar to manage the deployment. Maybe combined with argocd-image-updater to look for newly tagged images?
 
 ## Deployment documentation
 
