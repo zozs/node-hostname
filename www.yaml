@@ -46,14 +46,13 @@ metadata:
   name: node-hostname
 spec:
   entryPoints:
-  #- websecure
-  - web
+  - websecure
   routes:
   - kind: Rule
     match: Host(`hostname.cryptosec.se`)
     services:
     - name: node-hostname
       port: http
-  #tls:
-  #  certResolver: myresolver
+  tls:
+    certResolver: default
 ---
