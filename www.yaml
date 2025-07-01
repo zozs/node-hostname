@@ -16,13 +16,18 @@ spec:
     spec:
       containers:
       - name: node-hostname
-        image: ghcr.io/zozs/node-hostname
+        image: ghcr.io/zozs/node-hostname:latest
         env:
         - name: PORT
           value: "3000"
         ports:
         - name: http
           containerPort: 3000
+        resources:
+          limits:
+            cpu: 100m
+          requests:
+            cpu: 100m
         readinessProbe:
           httpGet:
             path: /
@@ -56,3 +61,21 @@ spec:
   tls:
     certResolver: default
 ---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: node-hostname
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: node-hostname
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
